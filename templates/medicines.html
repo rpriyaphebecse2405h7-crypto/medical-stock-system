@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Medicines · MediStock{% endblock %}
+{% block content %}
+
+<div class="page-header" style="display:flex; justify-content:space-between; align-items:center;">
+    <div>
+        <h1>Medicines</h1>
+        <p>Manage your medicine inventory</p>
+    </div>
+    {% if session['role'] == 'Admin' %}
+    <a href="/add_medicine" class="btn-apollo"><i class="bi bi-plus-circle"></i> Add Medicine</a>
+    {% endif %}
+</div>
+
+<div class="apollo-card">
+    <div class="apollo-card-header">
+        <h5><i class="bi bi-capsule" style="color:var(--apollo-red)"></i> Medicine List</h5>
+        <span style="font-size:13px; color:#6b7280;">{{ medicines|length }} total</span>
+    </div>
+    <div style="overflow-x:auto;">
+        <table class="apollo-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Batch No.</th>
+                    <th>Expiry Date</th>
+                    <th>Quantity</th>
+                    <th>Price (₹)</th>
+                    {% if session['role'] == 'Admin' %}<th>Action</th>{% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for medicine in medicines %}
+                <tr>
+                    <td style="color:#9ca3af; font-size:12px;">#{{ medicine[0] }}</td>
+                    <td style="font-weight:600;">{{ medicine[1] }}</td>
+                    <td><span class="badge-green">{{ medicine[2] }}</span></td>
+                    <td style="font-family:monospace; font-size:13px;">{{ medicine[3] }}</td>
+                    <td><span class="badge-red">{{ medicine[6] }}</span></td>
+                    <td><span class="{% if medicine[7] < 10 %}badge-orange{% else %}badge-green{% endif %}">{{ medicine[7] }}</span></td>
+                    <td style="font-weight:600;">₹{{ medicine[8] }}</td>
+                    {% if session['role'] == 'Admin' %}
+                    <td>
+                        <a href="/delete_medicine/{{ medicine[0] }}"
+                           onclick="return confirm('Delete this medicine?')"
+                           style="color:var(--apollo-red); font-size:13px; font-weight:600; text-decoration:none;">
+                            <i class="bi bi-trash"></i> Delete
+                        </a>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" style="text-align:center; padding:40px; color:#9ca3af;">
+                        <i class="bi bi-capsule" style="font-size:32px; display:block; margin-bottom:8px;"></i>
+                        No medicines found. <a href="/add_medicine" style="color:var(--apollo-red);">Add one now</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

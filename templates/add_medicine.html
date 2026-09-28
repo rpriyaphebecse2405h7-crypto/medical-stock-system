@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Add Medicine · MediStock{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <h1>Add Medicine</h1>
+    <p>Fill in the details to add a new medicine to inventory</p>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="apollo-card">
+            <div class="apollo-card-header">
+                <h5><i class="bi bi-capsule" style="color:var(--apollo-red)"></i> Medicine Details</h5>
+            </div>
+            <div class="apollo-card-body">
+                <form method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Medicine Name</label>
+                            <input type="text" name="name" class="form-control" placeholder="e.g. Paracetamol 500mg" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Category</label>
+                            <input type="text" name="category" class="form-control" placeholder="e.g. Analgesic" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Batch Number</label>
+                            <input type="text" name="batch" class="form-control" placeholder="e.g. BATCH-2024-001" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Supplier</label>
+                            <select name="supplier_id" class="form-select" required>
+                                <option value="">Select Supplier</option>
+                                {% for supplier in suppliers %}
+                                <option value="{{ supplier[0] }}">{{ supplier[1] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Manufacture Date</label>
+                            <input type="date" name="manufacture_date" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Expiry Date</label>
+                            <input type="date" name="expiry_date" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Quantity</label>
+                            <input type="number" name="quantity" class="form-control" placeholder="Enter quantity" min="0" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Price (₹)</label>
+                            <input type="number" step="0.01" name="price" class="form-control" placeholder="0.00" min="0" required>
+                        </div>
+                        <div class="col-12" style="display:flex; gap:10px; margin-top:8px;">
+                            <button type="submit" class="btn-apollo"><i class="bi bi-check-circle"></i> Save Medicine</button>
+                            <a href="/medicines" class="btn-secondary-apollo"><i class="bi bi-arrow-left"></i> Cancel</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="apollo-card">
+            <div class="apollo-card-header">
+                <h5><i class="bi bi-info-circle" style="color:var(--apollo-red)"></i> Tips</h5>
+            </div>
+            <div class="apollo-card-body" style="font-size:13px; color:#6b7280; line-height:1.8;">
+                <p><strong style="color:#1a2332;">Batch Number</strong> helps track medicine lots for recalls.</p><br>
+                <p><strong style="color:#1a2332;">Low Stock Alert</strong> triggers when quantity falls below 10.</p><br>
+                <p><strong style="color:#1a2332;">Expiry Alert</strong> notifies 3 days before medicine expires.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

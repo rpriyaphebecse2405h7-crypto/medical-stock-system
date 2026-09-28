@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Suppliers · MediStock{% endblock %}
+{% block content %}
+
+<div class="page-header" style="display:flex; justify-content:space-between; align-items:center;">
+    <div>
+        <h1>Suppliers</h1>
+        <p>Manage your medicine suppliers</p>
+    </div>
+    {% if session['role'] == 'Admin' %}
+    <a href="/add_supplier" class="btn-apollo"><i class="bi bi-plus-circle"></i> Add Supplier</a>
+    {% endif %}
+</div>
+
+<div class="apollo-card">
+    <div class="apollo-card-header">
+        <h5><i class="bi bi-truck" style="color:var(--apollo-red)"></i> Supplier List</h5>
+        <span style="font-size:13px; color:#6b7280;">{{ suppliers|length }} total</span>
+    </div>
+    <div style="overflow-x:auto;">
+        <table class="apollo-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Supplier Name</th>
+                    <th>Contact Number</th>
+                    <th>Address</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for supplier in suppliers %}
+                <tr>
+                    <td style="color:#9ca3af; font-size:12px;">#{{ supplier[0] }}</td>
+                    <td style="font-weight:600;"><i class="bi bi-building" style="color:var(--apollo-red); margin-right:6px;"></i>{{ supplier[1] }}</td>
+                    <td><i class="bi bi-telephone" style="color:#6b7280; margin-right:6px;"></i>{{ supplier[2] }}</td>
+                    <td style="color:#6b7280; font-size:13px;">{{ supplier[3] }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" style="text-align:center; padding:40px; color:#9ca3af;">
+                        <i class="bi bi-truck" style="font-size:32px; display:block; margin-bottom:8px;"></i>
+                        No suppliers found. <a href="/add_supplier" style="color:var(--apollo-red);">Add one now</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

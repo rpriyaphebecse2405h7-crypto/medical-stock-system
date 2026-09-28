@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · MediStock{% endblock %}
+{% block content %}
+
+{% if expiring_soon %}
+<div class="expiry-modal-overlay" id="expiryModal">
+    <div class="expiry-modal">
+        <h3>⚠️ Expiry Alert!</h3>
+        <p style="color:#6b7280; font-size:14px;">The following medicines expire within <strong>3 days</strong>:</p>
+        <ul>
+            {% for med in expiring_soon %}
+            <li><strong>{{ med[0] }}</strong> — expires on {{ med[1] }}</li>
+            {% endfor %}
+        </ul>
+        <button class="btn-apollo" style="width:100%; justify-content:center;"
+            onclick="document.getElementById('expiryModal').style.display='none'">OK, Got It</button>
+    </div>
+</div>
+{% endif %}
+
+<div class="page-header">
+    <h1>Medicine Stock Dashboard</h1>
+    <p>Welcome back, {{ session['username'] }}! Here's what's happening today.</p>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon blue"><i class="bi bi-capsule"></i></div>
+            <div class="stat-value">{{ total_medicines }}</div>
+            <div class="stat-label">Total Medicines</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon green"><i class="bi bi-truck"></i></div>
+            <div class="stat-value">{{ total_suppliers }}</div>
+            <div class="stat-label">Total Suppliers</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon red"><i class="bi bi-calendar-x"></i></div>
+            <div class="stat-value">{{ expired_count }}</div>
+            <div class="stat-label">Expired Medicines</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon orange"><i class="bi bi-exclamation-triangle"></i></div>
+            <div class="stat-value">{{ low_stock }}</div>
+            <div class="stat-label">Low Stock Alerts</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="apollo-card">
+            <div class="apollo-card-header">
+                <h5><i class="bi bi-lightning-fill" style="color:var(--apollo-red)"></i> Quick Actions</h5>
+            </div>
+            <div class="apollo-card-body" style="display:flex; flex-direction:column; gap:10px;">
+                <a href="/add_medicine" class="btn-apollo"><i class="bi bi-plus-circle"></i> Add New Medicine</a>
+                <a href="/add_supplier" class="btn-apollo-outline"><i class="bi bi-person-plus"></i> Add New Supplier</a>
+                <a href="/reports" class="btn-secondary-apollo"><i class="bi bi-bar-chart"></i> View Reports</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="apollo-card">
+            <div class="apollo-card-header">
+                <h5><i class="bi bi-activity" style="color:var(--apollo-red)"></i> System Status</h5>
+            </div>
+            <div class="apollo-card-body">
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:12px; border-bottom:1px solid #f5f5f5;">
+                        <span style="font-size:14px; color:#6b7280;">Medicines Available</span>
+                        <span style="font-weight:700;">{{ total_medicines }}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:12px; border-bottom:1px solid #f5f5f5;">
+                        <span style="font-size:14px; color:#6b7280;">Active Suppliers</span>
+                        <span style="font-weight:700;">{{ total_suppliers }}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:12px; border-bottom:1px solid #f5f5f5;">
+                        <span style="font-size:14px; color:#6b7280;">Expired Medicines</span>
+                        <span class="badge-red">{{ expired_count }}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:14px; color:#6b7280;">Low Stock Alerts</span>
+                        <span class="badge-orange">{{ low_stock }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

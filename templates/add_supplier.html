@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Add Supplier · MediStock{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <h1>Add Supplier</h1>
+    <p>Register a new medicine supplier</p>
+</div>
+
+<div class="row">
+    <div class="col-md-7">
+        <div class="apollo-card">
+            <div class="apollo-card-header">
+                <h5><i class="bi bi-truck" style="color:var(--apollo-red)"></i> Supplier Details</h5>
+            </div>
+            <div class="apollo-card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Supplier Name</label>
+                        <input type="text" name="supplier_name" class="form-control" placeholder="e.g. Apollo Pharma Ltd" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Contact Number</label>
+                        <input type="text" name="contact_number" class="form-control" placeholder="e.g. +91 98765 43210" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Address</label>
+                        <textarea name="address" class="form-control" rows="3" placeholder="Full address" required style="resize:none;"></textarea>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <button type="submit" class="btn-apollo"><i class="bi bi-check-circle"></i> Add Supplier</button>
+                        <a href="/suppliers" class="btn-secondary-apollo"><i class="bi bi-arrow-left"></i> Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

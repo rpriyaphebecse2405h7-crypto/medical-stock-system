@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login · MediStock</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root { --apollo-red: #e3000f; --apollo-dark: #0a1628; --apollo-navy: #112240; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; display: flex; background: var(--apollo-dark); }
+        .left-panel { flex: 1; background: linear-gradient(135deg, var(--apollo-dark) 0%, var(--apollo-navy) 100%); display: flex; flex-direction: column; justify-content: center; padding: 60px; position: relative; overflow: hidden; }
+        .left-panel::before { content: ''; position: absolute; width: 400px; height: 400px; background: radial-gradient(circle, rgba(227,0,15,0.15) 0%, transparent 70%); top: -100px; right: -100px; border-radius: 50%; }
+        .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 60px; }
+        .brand-icon { width: 44px; height: 44px; background: var(--apollo-red); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+        .brand-name { font-size: 22px; font-weight: 800; color: white; }
+        .brand-name span { color: var(--apollo-red); }
+        .hero-text h1 { font-size: 42px; font-weight: 800; color: white; line-height: 1.15; margin-bottom: 16px; }
+        .hero-text h1 span { color: var(--apollo-red); }
+        .hero-text p { color: rgba(255,255,255,0.55); font-size: 16px; line-height: 1.7; max-width: 380px; }
+        .features { margin-top: 48px; display: flex; flex-direction: column; gap: 16px; }
+        .feature-item { display: flex; align-items: center; gap: 12px; color: rgba(255,255,255,0.7); font-size: 14px; }
+        .feature-dot { width: 8px; height: 8px; background: var(--apollo-red); border-radius: 50%; flex-shrink: 0; }
+        .right-panel { width: 480px; background: white; display: flex; flex-direction: column; justify-content: center; padding: 60px 48px; }
+        .login-header { margin-bottom: 36px; }
+        .login-header h2 { font-size: 28px; font-weight: 800; color: #0a1628; margin-bottom: 6px; }
+        .login-header p { color: #6b7280; font-size: 14px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-size: 13px; font-weight: 600; color: #1a2332; margin-bottom: 7px; }
+        .input-wrap { position: relative; }
+        .input-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 16px; }
+        input { width: 100%; padding: 11px 14px 11px 40px; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 14px; font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.2s; outline: none; color: #1a2332; }
+        input:focus { border-color: var(--apollo-red); box-shadow: 0 0 0 3px rgba(227,0,15,0.1); }
+        .btn-login { width: 100%; background: var(--apollo-red); color: white; border: none; padding: 13px; border-radius: 8px; font-size: 15px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; transition: all 0.2s; margin-top: 8px; }
+        .btn-login:hover { background: #c0000d; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(227,0,15,0.3); }
+        .register-link { text-align: center; margin-top: 20px; font-size: 13px; color: #6b7280; }
+        .register-link a { color: var(--apollo-red); font-weight: 600; text-decoration: none; }
+        .flash-alert { background: #fff0f1; border: 1px solid #fca5a5; border-left: 4px solid var(--apollo-red); padding: 10px 14px; border-radius: 8px; font-size: 13px; color: #b91c1c; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="left-panel">
+        <div class="brand">
+            <div class="brand-icon">💊</div>
+            <span class="brand-name">Medi<span>Stock</span></span>
+        </div>
+        <div class="hero-text">
+            <h1>Medicine Stock <span>Management</span> System</h1>
+            <p>A complete solution to manage your pharmacy inventory, track expiry dates, and monitor stock levels efficiently.</p>
+        </div>
+        <div class="features">
+            <div class="feature-item"><div class="feature-dot"></div> Real-time stock tracking</div>
+            <div class="feature-item"><div class="feature-dot"></div> Expiry date alerts</div>
+            <div class="feature-item"><div class="feature-dot"></div> Supplier management</div>
+            <div class="feature-item"><div class="feature-dot"></div> Role-based access control</div>
+        </div>
+    </div>
+    <div class="right-panel">
+        <div class="login-header">
+            <h2>Welcome back 👋</h2>
+            <p>Sign in to your MediStock account</p>
+        </div>
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}{% for msg in messages %}
+        <div class="flash-alert"><i class="bi bi-exclamation-circle"></i> {{ msg }}</div>
+        {% endfor %}{% endif %}
+        {% endwith %}
+        <form method="POST">
+            <div class="form-group">
+                <label>Username</label>
+                <div class="input-wrap">
+                    <i class="bi bi-person input-icon"></i>
+                    <input type="text" name="username" placeholder="Enter your username" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <div class="input-wrap">
+                    <i class="bi bi-lock input-icon"></i>
+                    <input type="password" name="password" placeholder="Enter your password" required>
+                </div>
+            </div>
+            <button type="submit" class="btn-login">Sign In →</button>
+        </form>
+        <div class="register-link">Don't have an account? <a href="/register">Register here</a></div>
+    </div>
+</body>
+</html>

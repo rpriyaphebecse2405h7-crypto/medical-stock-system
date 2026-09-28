@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Reports · MediStock{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <h1>Reports</h1>
+    <p>View expired medicines and low stock alerts</p>
+</div>
+
+<div class="apollo-card mb-4">
+    <div class="apollo-card-header">
+        <h5><i class="bi bi-calendar-x" style="color:var(--apollo-red)"></i> Expired Medicines</h5>
+        <span class="badge-red">{{ expired_medicines|length }} items</span>
+    </div>
+    <div style="overflow-x:auto;">
+        <table class="apollo-table">
+            <thead>
+                <tr><th>ID</th><th>Medicine Name</th><th>Expiry Date</th><th>Quantity</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+                {% for medicine in expired_medicines %}
+                <tr>
+                    <td style="color:#9ca3af; font-size:12px;">#{{ medicine[0] }}</td>
+                    <td style="font-weight:600;">{{ medicine[1] }}</td>
+                    <td><span class="badge-red">{{ medicine[6] }}</span></td>
+                    <td>{{ medicine[7] }}</td>
+                    <td><span class="badge-red">Expired</span></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" style="text-align:center; padding:32px; color:#0e9f6e;">
+                        <i class="bi bi-check-circle-fill" style="font-size:28px; display:block; margin-bottom:8px;"></i>
+                        No expired medicines ✅
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="apollo-card">
+    <div class="apollo-card-header">
+        <h5><i class="bi bi-exclamation-triangle" style="color:#f57c00"></i> Low Stock Medicines</h5>
+        <span class="badge-orange">{{ low_stock_medicines|length }} items</span>
+    </div>
+    <div style="overflow-x:auto;">
+        <table class="apollo-table">
+            <thead>
+                <tr><th>ID</th><th>Medicine Name</th><th>Category</th><th>Quantity</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+                {% for medicine in low_stock_medicines %}
+                <tr>
+                    <td style="color:#9ca3af; font-size:12px;">#{{ medicine[0] }}</td>
+                    <td style="font-weight:600;">{{ medicine[1] }}</td>
+                    <td>{{ medicine[2] }}</td>
+                    <td><span class="badge-orange">{{ medicine[7] }} units</span></td>
+                    <td><span class="badge-orange">Low Stock</span></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" style="text-align:center; padding:32px; color:#0e9f6e;">
+                        <i class="bi bi-check-circle-fill" style="font-size:28px; display:block; margin-bottom:8px;"></i>
+                        All medicines well stocked ✅
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

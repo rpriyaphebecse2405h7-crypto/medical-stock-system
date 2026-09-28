@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Staff Dashboard · MediStock{% endblock %}
+{% block content %}
+
+{% if expiring_soon %}
+<div class="expiry-modal-overlay" id="expiryModal">
+    <div class="expiry-modal">
+        <h3>⚠️ Expiry Alert!</h3>
+        <p style="color:#6b7280; font-size:14px;">The following medicines expire within <strong>3 days</strong>:</p>
+        <ul>
+            {% for med in expiring_soon %}
+            <li><strong>{{ med[0] }}</strong> — expires on {{ med[1] }}</li>
+            {% endfor %}
+        </ul>
+        <button class="btn-apollo" style="width:100%; justify-content:center;"
+            onclick="document.getElementById('expiryModal').style.display='none'">OK, Got It</button>
+    </div>
+</div>
+{% endif %}
+
+<div class="page-header">
+    <h1>Staff Dashboard</h1>
+    <p>Welcome, {{ session['username'] }}! Here's your overview for today.</p>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon blue"><i class="bi bi-capsule"></i></div>
+            <div class="stat-value">{{ total_medicines }}</div>
+            <div class="stat-label">Total Medicines</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon red"><i class="bi bi-calendar-x"></i></div>
+            <div class="stat-value">{{ expired_count }}</div>
+            <div class="stat-label">Expired Medicines</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon orange"><i class="bi bi-exclamation-triangle"></i></div>
+            <div class="stat-value">{{ low_stock }}</div>
+            <div class="stat-label">Low Stock Alerts</div>
+        </div>
+    </div>
+</div>
+
+<div class="apollo-card">
+    <div class="apollo-card-header">
+        <h5><i class="bi bi-lightning-fill" style="color:var(--apollo-red)"></i> Quick Access</h5>
+    </div>
+    <div class="apollo-card-body" style="display:flex; gap:12px; flex-wrap:wrap;">
+        <a href="/medicines" class="btn-apollo"><i class="bi bi-capsule"></i> View Medicines</a>
+        <a href="/suppliers" class="btn-apollo-outline"><i class="bi bi-truck"></i> View Suppliers</a>
+        <a href="/reports" class="btn-secondary-apollo"><i class="bi bi-bar-chart"></i> View Reports</a>
+    </div>
+</div>
+{% endblock %}
