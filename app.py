@@ -4,14 +4,11 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import date
 
 
-app = Flask(__name__)
-app.secret_key = 'medicine_secret_key'
+from config import Config
 
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'Pragnay@2007'
-app.config['MYSQL_DB'] = 'medicine_stock_db'
-app.config['MYSQL_PORT'] = 3306
+app = Flask(__name__)
+app.config.from_object(Config)
+app.secret_key = app.config.get('SECRET_KEY', 'medicine_secret_key')
 
 mysql = MySQL(app)
 
