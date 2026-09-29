@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Invoice #{{ sale[0] }} · MediStock{% endblock %}
+{% block content %}
+
+<style>
+    @media print {
+        body { background: white !important; font-size: 12pt; }
+        .top-navbar, .sidebar, .no-print { display: none !important; }
+        .main-content { margin-left: 0 !important; margin-top: 0 !important; padding: 0 !important; }
+        .receipt-container { box-shadow: none !important; border: 1px solid #ccc !important; width: 100% !important; max-width: 100% !important; }
+    }
+</style>
+
+<div class="no-print mb-3" style="display:flex; justify-content:space-between; align-items:center;">
+    <a href="/billing" class="btn-secondary-apollo"><i class="bi bi-arrow-left"></i> Back to Billing</a>
+    <div style="display:flex; gap:10px;">
+        <button onclick="window.print()" class="btn-apollo"><i class="bi bi-printer"></i> Print Invoice</button>
+        <a href="/sales" class="btn-apollo-outline"><i class="bi bi-clock-history"></i> All Sales</a>
+    </div>
+</div>
+
+<div class="receipt-container" style="max-width:700px; margin:0 auto; background:white; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.08); border:1px solid #eaeaea; overflow:hidden;">
+    <div style="background:var(--apollo-dark); color:white; padding:24px 30px; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <div style="font-size:22px;">💊</div>
+                <h3 style="margin:0; font-weight:800; letter-spacing:-0.5px;">Medi<span style="color:var(--apollo-red)">Stock</span></h3>
+            </div>
+            <p style="margin:4px 0 0; font-size:12px; color:rgba(255,255,255,0.7);">Pharmacy & Medical Supplies Management</p>
+        </div>
+        <div style="text-align:right;">
+            <div style="font-size:11px; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.6);">Official Tax Invoice</div>
+            <div style="font-size:18px; font-weight:800; color:white;">#INV-{{ "%05d" % sale[0] }}</div>
+        </div>
+    </div>
+
+    <div style="padding:24px 30px; border-bottom:1px solid #f0f0f0;">
+        <div class="row g-3">
+            <div class="col-sm-6">
+                <span style="font-size:12px; color:var(--apollo-muted); text-transform:uppercase; font-weight:700;">Billed To:</span>
+                <div style="font-size:16px; font-weight:700; color:var(--apollo-text); margin-top:2px;">{{ sale[3] }}</div>
+                <div style="font-size:13px; color:var(--apollo-muted);">Walk-in Patient / Counter Sale</div>
+            </div>
+            <div class="col-sm-6 text-sm-end">
+                <span style="font-size:12px; color:var(--apollo-muted); text-transform:uppercase; font-weight:700;">Sale Details:</span>
+                <div style="font-size:13px; margin-top:2px;"><strong>Date:</strong> {{ sale[6] }}</div>
+                <div style="font-size:13px;"><strong>Dispensed By:</strong> {{ session['username'] }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div style="padding:24px 30px;">
+        <table class="table" style="margin-bottom:0;">
+            <thead>
+                <tr style="border-bottom:2px solid #eaeaea; font-size:12px; text-transform:uppercase; color:var(--apollo-muted);">
+                    <th style="padding:10px 0;">Item & Description</th>
+                    <th>Batch</th>
+                    <th class="text-center">Qty</th>
+                    <th class="text-end">Unit Price</th>
+                    <th class="text-end" style="padding-right:0;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="border-bottom:1px solid #f0f0f0; vertical-align:middle;">
+                    <td style="padding:16px 0;">
+                        <strong style="font-size:15px; color:var(--apollo-text); display:block;">{{ sale[1] }}</strong>
+                        <span class="badge-green" style="font-size:11px;">{{ sale[7] }}</span>
+                    </td>
+                    <td><code style="font-size:13px;">{{ sale[2] }}</code></td>
+                    <td class="text-center"><strong style="font-size:15px;">{{ sale[4] }}</strong></td>
+                    <td class="text-end">₹{{ "%.2f" % unit_price }}</td>
+                    <td class="text-end" style="padding-right:0;"><strong style="font-size:16px;">₹{{ "%.2f" % sale[5] }}</strong></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="display:flex; justify-content:flex-end; margin-top:24px;">
+            <div style="width:260px; background:#f9fafb; border-radius:8px; padding:16px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px;">
+                    <span style="color:var(--apollo-muted);">Subtotal:</span>
+                    <span>₹{{ "%.2f" % sale[5] }}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:13px;">
+                    <span style="color:var(--apollo-muted);">Taxes / GST:</span>
+                    <span style="color:#0e9f6e;">Inclusive</span>
+                </div>
+                <hr style="margin:8px 0; border-top:1px solid #e5e7eb;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:15px; font-weight:700;">Grand Total:</span>
+                    <span style="font-size:22px; font-weight:800; color:var(--apollo-red);">₹{{ "%.2f" % sale[5] }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="background:#fcfcfd; border-top:1px solid #f0f0f0; padding:18px 30px; text-align:center;">
+        <p style="margin:0; font-size:12px; color:var(--apollo-muted);">
+            Thank you for choosing MediStock! For inquiries or returns, please bring this receipt along with original packaging.
+        </p>
+    </div>
+</div>
+
+{% endblock %}

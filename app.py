@@ -1,7 +1,15 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
-from flask_mysqldb import MySQL
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import date
+
+
+try:
+    from flask_mysqldb import MySQL
+except ImportError:
+    class MySQL:
+        def __init__(self, app=None):
+            self.app = app
+            self.connection = None
 
 
 from config import Config
@@ -50,6 +58,18 @@ def init_db():
         )
     """)
 
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS sales (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            medicine_id INT,
+            customer_name VARCHAR(100) DEFAULT 'Walk-in Customer',
+            quantity_sold INT NOT NULL,
+            total_amount DECIMAL(10, 2) NOT NULL,
+            sale_date DATE NOT NULL,
+            FOREIGN KEY (medicine_id) REFERENCES medicines(id) ON DELETE SET NULL
+        )
+    """)
+
     def add_column_if_missing(table, column, definition):
         cur.execute(f"""
             SELECT COUNT(*) FROM information_schema.COLUMNS 
@@ -60,6 +80,8 @@ def init_db():
         exists = cur.fetchone()[0]
         if not exists:
             cur.execute(f"ALTER TABLE {table} ADD COLUMN {column} {definition}")
+
+    add_column_if_missing('sales', 'customer_name', "VARCHAR(100) DEFAULT 'Walk-in Customer'")
 
     conn.commit()
     cur.close()
@@ -154,6 +176,11 @@ def dashboard():
     """)
     expiring_soon = cur.fetchall()
 
+    cur.execute("SELECT COUNT(*), COALESCE(SUM(total_amount), 0) FROM sales")
+    sales_stats = cur.fetchone()
+    total_sales = sales_stats[0] if sales_stats else 0
+    total_revenue = float(sales_stats[1]) if sales_stats and sales_stats[1] is not None else 0.0
+
     cur.close()
 
     return render_template(
@@ -162,7 +189,9 @@ def dashboard():
         total_suppliers=total_suppliers,
         expired_count=expired_count,
         low_stock=low_stock,
-        expiring_soon=expiring_soon
+        expiring_soon=expiring_soon,
+        total_sales=total_sales,
+        total_revenue=total_revenue
     )
 
 
@@ -185,6 +214,11 @@ def staff_dashboard():
     """)
     expiring_soon = cur.fetchall()
 
+    cur.execute("SELECT COUNT(*), COALESCE(SUM(total_amount), 0) FROM sales")
+    sales_stats = cur.fetchone()
+    total_sales = sales_stats[0] if sales_stats else 0
+    total_revenue = float(sales_stats[1]) if sales_stats and sales_stats[1] is not None else 0.0
+
     cur.close()
 
     return render_template(
@@ -192,7 +226,9 @@ def staff_dashboard():
         total_medicines=total_medicines,
         expired_count=expired_count,
         low_stock=low_stock,
-        expiring_soon=expiring_soon
+        expiring_soon=expiring_soon,
+        total_sales=total_sales,
+        total_revenue=total_revenue
     )
 
 
@@ -315,6 +351,146 @@ def reports():
         'reports.html',
         expired_medicines=expired_medicines,
         low_stock_medicines=low_stock_medicines
+    )
+
+
+@app.route('/billing', methods=['GET', 'POST'])
+def billing():
+    if not session.get('username'):
+        flash('Please login to access billing')
+        return redirect(url_for('login'))
+
+    cur = mysql.connection.cursor()
+
+    if request.method == 'POST':
+        medicine_id = request.form.get('medicine_id')
+        customer_name = request.form.get('customer_name', '').strip() or 'Walk-in Customer'
+        quantity_str = request.form.get('quantity')
+
+        if not medicine_id or not quantity_str:
+            flash('Please select a medicine and enter quantity')
+            cur.close()
+            return redirect(url_for('billing'))
+
+        try:
+            quantity_sold = int(quantity_str)
+            if quantity_sold <= 0:
+                raise ValueError
+        except ValueError:
+            flash('Please enter a valid positive quantity')
+            cur.close()
+            return redirect(url_for('billing'))
+
+        cur.execute(
+            "SELECT id, name, batch_number, quantity, price, expiry_date FROM medicines WHERE id = %s",
+            (medicine_id,)
+        )
+        medicine = cur.fetchone()
+
+        if not medicine:
+            flash('Selected medicine not found')
+            cur.close()
+            return redirect(url_for('billing'))
+
+        med_id, med_name, batch_no, current_stock, unit_price, expiry_date = medicine
+
+        # Safety check 1: Expiry date
+        if expiry_date and expiry_date < date.today():
+            flash(f'Cannot dispense {med_name} (Batch: {batch_no}): Medicine has expired on {expiry_date}!')
+            cur.close()
+            return redirect(url_for('billing'))
+
+        # Safety check 2: Sufficient stock
+        if quantity_sold > current_stock:
+            flash(f'Insufficient stock for {med_name}! Available: {current_stock}, Requested: {quantity_sold}')
+            cur.close()
+            return redirect(url_for('billing'))
+
+        total_amount = round(float(unit_price) * quantity_sold, 2)
+
+        # Atomic transaction: decrement stock & insert sale
+        cur.execute(
+            "UPDATE medicines SET quantity = quantity - %s WHERE id = %s",
+            (quantity_sold, med_id)
+        )
+        cur.execute(
+            """INSERT INTO sales (medicine_id, customer_name, quantity_sold, total_amount, sale_date)
+               VALUES (%s, %s, %s, %s, CURDATE())""",
+            (med_id, customer_name, quantity_sold, total_amount)
+        )
+        sale_id = cur.lastrowid
+        mysql.connection.commit()
+        cur.close()
+
+        flash(f'Bill generated successfully! Sold {quantity_sold} units of {med_name} for ₹{total_amount:.2f}')
+        return redirect(url_for('receipt', sale_id=sale_id))
+
+    # GET request: fetch non-expired in-stock medicines
+    cur.execute("""
+        SELECT id, name, category, batch_number, quantity, price, expiry_date
+        FROM medicines
+        WHERE expiry_date >= CURDATE() AND quantity > 0
+        ORDER BY name ASC
+    """)
+    medicines = cur.fetchall()
+    cur.close()
+    return render_template('billing.html', medicines=medicines)
+
+
+@app.route('/receipt/<int:sale_id>')
+def receipt(sale_id):
+    if not session.get('username'):
+        flash('Please login to view receipt')
+        return redirect(url_for('login'))
+
+    cur = mysql.connection.cursor()
+    cur.execute("""
+        SELECT s.id, COALESCE(m.name, 'Deleted Medicine'), COALESCE(m.batch_number, 'N/A'),
+               s.customer_name, s.quantity_sold, s.total_amount, s.sale_date, COALESCE(m.category, 'General')
+        FROM sales s
+        LEFT JOIN medicines m ON s.medicine_id = m.id
+        WHERE s.id = %s
+    """, (sale_id,))
+    sale = cur.fetchone()
+    cur.close()
+
+    if not sale:
+        flash('Receipt not found')
+        return redirect(url_for('billing'))
+
+    # Calculate unit price for display: total_amount / quantity_sold
+    unit_price = round(float(sale[5]) / sale[4], 2) if sale[4] else 0.0
+
+    return render_template('receipt.html', sale=sale, unit_price=unit_price)
+
+
+@app.route('/sales')
+def sales():
+    if not session.get('username'):
+        flash('Please login to view sales history')
+        return redirect(url_for('login'))
+
+    cur = mysql.connection.cursor()
+    cur.execute("""
+        SELECT s.id, COALESCE(m.name, 'Deleted Medicine'), COALESCE(m.batch_number, 'N/A'),
+               s.customer_name, s.quantity_sold, s.total_amount, s.sale_date
+        FROM sales s
+        LEFT JOIN medicines m ON s.medicine_id = m.id
+        ORDER BY s.id DESC
+    """)
+    sales_data = cur.fetchall()
+
+    cur.execute("SELECT COUNT(*), COALESCE(SUM(total_amount), 0) FROM sales")
+    summary = cur.fetchone()
+    total_sales = summary[0] if summary else 0
+    total_revenue = float(summary[1]) if summary and summary[1] is not None else 0.0
+
+    cur.close()
+    return render_template(
+        'sales.html',
+        sales=sales_data,
+        total_sales=total_sales,
+        total_revenue=total_revenue
     )
 
 
