@@ -177,4 +177,4 @@ Access the application at `http://localhost:5000/`.
 ## 👥 Contributors
 
 * **Priya** ([@rpriyaphebecse2405h7-crypto](https://github.com/rpriyaphebecse2405h7-crypto)) - Medicine Stock & Billing Features
-* **Teja Sri** ([@tejasree2405j7](https://github.com/tejasree2405j7)) - Branching and Collaborative Workflow Contribution
+* **Tejasree** ([@tejasree2405j7](https://github.com/tejasree2405j7) · `ttejasree_cse2405j7@mgit.ac.in`) - Branching, collaborative workflow, and QA testing contribution
