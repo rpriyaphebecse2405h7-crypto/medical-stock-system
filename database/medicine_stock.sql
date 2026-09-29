@@ -24,6 +24,7 @@ CREATE TABLE medicines (
 CREATE TABLE sales (
     id INT AUTO_INCREMENT PRIMARY KEY,
     medicine_id INT,
+    customer_name VARCHAR(100) DEFAULT 'Walk-in Customer',
     quantity_sold INT,
     total_amount DECIMAL(10,2),
     sale_date DATE,
@@ -39,16 +40,3 @@ CREATE TABLE users (
 
 INSERT INTO users (username, password, role)
 VALUES ('admin', 'admin123', 'Admin');
-
-CREATE TABLE users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100),
-    category VARCHAR(100),
-    batch_number VARCHAR(100),
-    supplier_id INT,
-    manufacture_date DATE,
-    expiry_date DATE,
-    quantity INT,
-    price DECIMAL(10,2),
-    FOREIGN KEY (supplier_id) REFERENCES suppliers(id)
-);

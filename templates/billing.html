@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+{% block title %}Billing & Dispensing · MediStock{% endblock %}
+{% block content %}
+
+<div class="page-header" style="display:flex; justify-content:space-between; align-items:center;">
+    <div>
+        <h1>Medicine Billing & Dispensing</h1>
+        <p>Dispense medicines to customers with automatic inventory deduction</p>
+    </div>
+    <div>
+        <a href="/sales" class="btn-apollo-outline"><i class="bi bi-clock-history"></i> View Sales History</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="apollo-card">
+            <div class="apollo-card-header">
+                <h5><i class="bi bi-receipt" style="color:var(--apollo-red)"></i> Dispense Medicine</h5>
+                <span class="badge-green"><i class="bi bi-shield-check"></i> Stock Synchronized</span>
+            </div>
+            <div class="apollo-card-body">
+                <form method="POST" id="billingForm">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Customer Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text" style="background:#f8f9fb; border-color:#e5e7eb;"><i class="bi bi-person"></i></span>
+                                <input type="text" name="customer_name" id="customerName" class="form-control" placeholder="Walk-in Customer (or enter customer/patient name)">
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Select Medicine <span style="color:var(--apollo-red)">*</span></label>
+                            <select name="medicine_id" id="medicineSelect" class="form-select" required>
+                                <option value="">-- Choose in-stock medicine --</option>
+                                {% for med in medicines %}
+                                <option value="{{ med[0] }}" 
+                                        data-name="{{ med[1] }}"
+                                        data-category="{{ med[2] }}"
+                                        data-batch="{{ med[3] }}"
+                                        data-stock="{{ med[4] }}" 
+                                        data-price="{{ med[5] }}"
+                                        data-expiry="{{ med[6] }}">
+                                    {{ med[1] }} (Batch: {{ med[3] }}) — Available: {{ med[4] }} units — ₹{{ med[5] }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div id="medicineNotice" class="form-text mt-1 text-muted">
+                                Only valid (unexpired) medicines currently in stock are listed.
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Medicine Info Card -->
+                        <div class="col-12" id="medDetailsCard" style="display:none;">
+                            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px;">
+                                <div class="row g-2 text-sm">
+                                    <div class="col-sm-4">
+                                        <span style="font-size:12px; color:var(--apollo-muted); display:block;">Category</span>
+                                        <strong id="infoCategory">-</strong>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <span style="font-size:12px; color:var(--apollo-muted); display:block;">Batch Number</span>
+                                        <code id="infoBatch">-</code>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <span style="font-size:12px; color:var(--apollo-muted); display:block;">Expiry Date</span>
+                                        <span id="infoExpiry" class="badge-red">-</span>
+                                    </div>
+                                    <div class="col-sm-6 mt-2">
+                                        <span style="font-size:12px; color:var(--apollo-muted); display:block;">Available Stock</span>
+                                        <span id="infoStockBadge" class="badge-green">0 units</span>
+                                    </div>
+                                    <div class="col-sm-6 mt-2">
+                                        <span style="font-size:12px; color:var(--apollo-muted); display:block;">Unit Price</span>
+                                        <strong style="color:var(--apollo-text); font-size:16px;">₹<span id="infoPrice">0.00</span></strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Quantity to Dispense <span style="color:var(--apollo-red)">*</span></label>
+                            <input type="number" name="quantity" id="quantityInput" class="form-control" placeholder="1" min="1" value="1" required>
+                            <div id="stockAlert" class="text-danger mt-1" style="font-size:12px; display:none;">
+                                <i class="bi bi-exclamation-triangle-fill"></i> Requested quantity exceeds available stock!
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Total Amount</label>
+                            <div class="input-group">
+                                <span class="input-group-text" style="background:#f8f9fb; border-color:#e5e7eb; font-weight:700;">₹</span>
+                                <input type="text" id="totalDisplay" class="form-control" style="font-size:18px; font-weight:800; color:var(--apollo-red); background:#fff;" readonly value="0.00">
+                            </div>
+                        </div>
+
+                        <div class="col-12" style="display:flex; gap:10px; margin-top:12px;">
+                            <button type="submit" id="submitBtn" class="btn-apollo" style="padding:12px 24px;">
+                                <i class="bi bi-check2-circle"></i> Complete Sale & Generate Bill
+                            </button>
+                            <a href="/dashboard" class="btn-secondary-apollo" style="padding:12px 20px;">
+                                <i class="bi bi-arrow-left"></i> Cancel
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="apollo-card mb-3">
+            <div class="apollo-card-header">
+                <h5><i class="bi bi-file-earmark-text" style="color:var(--apollo-red)"></i> Bill Summary Preview</h5>
+            </div>
+            <div class="apollo-card-body">
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:14px;">
+                    <span style="color:var(--apollo-muted);">Customer:</span>
+                    <strong id="summaryCustomer">Walk-in Customer</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:14px;">
+                    <span style="color:var(--apollo-muted);">Medicine:</span>
+                    <strong id="summaryMedicine">—</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:14px;">
+                    <span style="color:var(--apollo-muted);">Batch No:</span>
+                    <span id="summaryBatch" style="font-family:monospace;">—</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:14px;">
+                    <span style="color:var(--apollo-muted);">Unit Price:</span>
+                    <span id="summaryUnitPrice">₹0.00</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:14px;">
+                    <span style="color:var(--apollo-muted);">Quantity:</span>
+                    <strong id="summaryQuantity">0</strong>
+                </div>
+                <hr style="border-top:1px dashed #e5e7eb; margin:16px 0;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:16px; font-weight:700;">Grand Total:</span>
+                    <span style="font-size:24px; font-weight:800; color:var(--apollo-red);" id="summaryTotal">₹0.00</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="apollo-card" style="background:#fff9fa; border:1px solid #ffe3e6;">
+            <div class="apollo-card-body" style="padding:16px;">
+                <h6 style="font-size:13px; font-weight:700; color:var(--apollo-red); margin-bottom:6px;">
+                    <i class="bi bi-info-circle-fill"></i> Safety & Inventory Rules:
+                </h6>
+                <ul style="font-size:12px; color:#4b5563; padding-left:18px; margin:0;">
+                    <li>Inventory count updates automatically in real-time.</li>
+                    <li>Expired medicines are strictly filtered out and cannot be sold.</li>
+                    <li>Sales records are stored permanently in the audit transaction log.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const medSelect = document.getElementById('medicineSelect');
+    const qtyInput = document.getElementById('quantityInput');
+    const totalDisplay = document.getElementById('totalDisplay');
+    const submitBtn = document.getElementById('submitBtn');
+    const stockAlert = document.getElementById('stockAlert');
+    const customerInput = document.getElementById('customerName');
+
+    const detailsCard = document.getElementById('medDetailsCard');
+    const infoCategory = document.getElementById('infoCategory');
+    const infoBatch = document.getElementById('infoBatch');
+    const infoExpiry = document.getElementById('infoExpiry');
+    const infoStockBadge = document.getElementById('infoStockBadge');
+    const infoPrice = document.getElementById('infoPrice');
+
+    const summaryCustomer = document.getElementById('summaryCustomer');
+    const summaryMedicine = document.getElementById('summaryMedicine');
+    const summaryBatch = document.getElementById('summaryBatch');
+    const summaryUnitPrice = document.getElementById('summaryUnitPrice');
+    const summaryQuantity = document.getElementById('summaryQuantity');
+    const summaryTotal = document.getElementById('summaryTotal');
+
+    function updateCalculations() {
+        const selected = medSelect.options[medSelect.selectedIndex];
+        const custVal = customerInput.value.trim() || 'Walk-in Customer';
+        summaryCustomer.textContent = custVal;
+
+        if (!selected || !selected.value) {
+            detailsCard.style.display = 'none';
+            totalDisplay.value = '0.00';
+            summaryMedicine.textContent = '—';
+            summaryBatch.textContent = '—';
+            summaryUnitPrice.textContent = '₹0.00';
+            summaryQuantity.textContent = '0';
+            summaryTotal.textContent = '₹0.00';
+            stockAlert.style.display = 'none';
+            submitBtn.disabled = false;
+            return;
+        }
+
+        const name = selected.getAttribute('data-name');
+        const category = selected.getAttribute('data-category');
+        const batch = selected.getAttribute('data-batch');
+        const stock = parseInt(selected.getAttribute('data-stock'), 10) || 0;
+        const price = parseFloat(selected.getAttribute('data-price')) || 0;
+        const expiry = selected.getAttribute('data-expiry');
+
+        detailsCard.style.display = 'block';
+        infoCategory.textContent = category;
+        infoBatch.textContent = batch;
+        infoExpiry.textContent = expiry;
+        infoPrice.textContent = price.toFixed(2);
+
+        infoStockBadge.textContent = stock + ' units';
+        if (stock < 10) {
+            infoStockBadge.className = 'badge-orange';
+        } else {
+            infoStockBadge.className = 'badge-green';
+        }
+
+        let qty = parseInt(qtyInput.value, 10);
+        if (isNaN(qty) || qty <= 0) {
+            qty = 1;
+            qtyInput.value = 1;
+        }
+
+        summaryMedicine.textContent = name;
+        summaryBatch.textContent = batch;
+        summaryUnitPrice.textContent = '₹' + price.toFixed(2);
+        summaryQuantity.textContent = qty;
+
+        const total = (qty * price).toFixed(2);
+        totalDisplay.value = total;
+        summaryTotal.textContent = '₹' + total;
+
+        if (qty > stock) {
+            stockAlert.style.display = 'block';
+            submitBtn.disabled = true;
+        } else {
+            stockAlert.style.display = 'none';
+            submitBtn.disabled = false;
+        }
+    }
+
+    medSelect.addEventListener('change', updateCalculations);
+    qtyInput.addEventListener('input', updateCalculations);
+    customerInput.addEventListener('input', updateCalculations);
+    updateCalculations();
+</script>
+{% endblock %}
