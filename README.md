@@ -171,3 +171,10 @@ Access the application at `http://localhost:5000/`.
    ```bash
    python app.py
    ```
+
+---
+
+## 👥 Contributors
+
+* **Priya** ([@rpriyaphebecse2405h7-crypto](https://github.com/rpriyaphebecse2405h7-crypto)) - Medicine Stock & Billing Features
+* **Teja Sri** ([@tejasree2405j7](https://github.com/tejasree2405j7)) - Branching and Collaborative Workflow Contribution
