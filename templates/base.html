@@ -113,6 +113,12 @@
         <a href="/medicines" class="sidebar-link {% if '/medicines' in request.path %}active{% endif %}">
             <i class="bi bi-capsule"></i> Medicines
         </a>
+        <a href="/billing" class="sidebar-link {% if request.path == '/billing' or '/receipt' in request.path %}active{% endif %}">
+            <i class="bi bi-receipt"></i> Billing & Dispense
+        </a>
+        <a href="/sales" class="sidebar-link {% if request.path == '/sales' %}active{% endif %}">
+            <i class="bi bi-clock-history"></i> Sales History
+        </a>
         <a href="/suppliers" class="sidebar-link {% if '/supplier' in request.path %}active{% endif %}">
             <i class="bi bi-truck"></i> Suppliers
         </a>

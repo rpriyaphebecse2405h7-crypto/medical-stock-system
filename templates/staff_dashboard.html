@@ -24,25 +24,39 @@
 </div>
 
 <div class="row g-3 mb-4">
-    <div class="col-md-4">
+    <div class="col-md-4 col-lg-2">
         <div class="stat-card">
             <div class="stat-icon blue"><i class="bi bi-capsule"></i></div>
             <div class="stat-value">{{ total_medicines }}</div>
             <div class="stat-label">Total Medicines</div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-4 col-lg-2">
         <div class="stat-card">
             <div class="stat-icon red"><i class="bi bi-calendar-x"></i></div>
             <div class="stat-value">{{ expired_count }}</div>
             <div class="stat-label">Expired Medicines</div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-4 col-lg-2">
         <div class="stat-card">
             <div class="stat-icon orange"><i class="bi bi-exclamation-triangle"></i></div>
             <div class="stat-value">{{ low_stock }}</div>
             <div class="stat-label">Low Stock Alerts</div>
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-icon blue" style="background:#e8f0fe; color:#1a56db;"><i class="bi bi-receipt"></i></div>
+            <div class="stat-value">{{ total_sales }}</div>
+            <div class="stat-label">Total Invoices</div>
+        </div>
+    </div>
+    <div class="col-md-4 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-icon green" style="background:#e8faf0; color:#0e9f6e;"><i class="bi bi-currency-rupee"></i></div>
+            <div class="stat-value" style="font-size:24px;">₹{{ "%.0f" % total_revenue }}</div>
+            <div class="stat-label">Sales Revenue</div>
         </div>
     </div>
 </div>
@@ -52,8 +66,9 @@
         <h5><i class="bi bi-lightning-fill" style="color:var(--apollo-red)"></i> Quick Access</h5>
     </div>
     <div class="apollo-card-body" style="display:flex; gap:12px; flex-wrap:wrap;">
-        <a href="/medicines" class="btn-apollo"><i class="bi bi-capsule"></i> View Medicines</a>
-        <a href="/suppliers" class="btn-apollo-outline"><i class="bi bi-truck"></i> View Suppliers</a>
+        <a href="/billing" class="btn-apollo"><i class="bi bi-receipt"></i> Dispense Medicine</a>
+        <a href="/sales" class="btn-apollo-outline"><i class="bi bi-clock-history"></i> Sales Records</a>
+        <a href="/medicines" class="btn-secondary-apollo"><i class="bi bi-capsule"></i> View Medicines</a>
         <a href="/reports" class="btn-secondary-apollo"><i class="bi bi-bar-chart"></i> View Reports</a>
     </div>
 </div>
